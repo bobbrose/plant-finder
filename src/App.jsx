@@ -42,8 +42,12 @@ export default function App() {
       .then((r) => r.json())
       .then((data) => {
         if (data.city && !data.error) {
-          setLocation({ city: data.city, region: data.region, country: data.country_name, zip: data.postal })
+          const loc = { city: data.city, region: data.region, country: data.country_name, zip: data.postal }
+          setLocation(loc)
           setLocationPhase('detected')
+          if (import.meta.env.VITE_DEBUG === 'true') {
+            console.log('[DEBUG] Inferred location from IP:', loc)
+          }
         } else {
           setLocationPhase('needs-zip')
         }
@@ -54,8 +58,12 @@ export default function App() {
   const handleZipSubmit = (e) => {
     e.preventDefault()
     if (zipInput.trim()) {
-      setLocation({ zip: zipInput.trim() })
+      const loc = { zip: zipInput.trim() }
+      setLocation(loc)
       setLocationPhase('detected')
+      if (import.meta.env.VITE_DEBUG === 'true') {
+        console.log('[DEBUG] Location set from ZIP input:', loc)
+      }
     }
   }
 
@@ -63,6 +71,9 @@ export default function App() {
     setSubmittedAnswers(answers)
     setPhase('loading')
     setError('')
+    if (import.meta.env.VITE_DEBUG === 'true') {
+      console.log('[DEBUG] Quiz answers:', answers)
+    }
 
     try {
       const response = await fetch('/api/plants', {

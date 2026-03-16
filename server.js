@@ -91,6 +91,10 @@ fireSafetyRating must be exactly one of: "Low" (fire-resistant, good for WUI zon
 
 For localNurseries, suggest 2-3 real nurseries near ${locationStr} that would likely stock this specific plant. Include real URLs if you know them. If you are not confident about specific nurseries in the area, use an empty array.`
 
+  if (process.env.VITE_DEBUG === 'true') {
+    console.log('[DEBUG] AI prompt:\n' + prompt)
+  }
+
   try {
     const message = await anthropic.messages.create({
       model: 'claude-opus-4-6',
