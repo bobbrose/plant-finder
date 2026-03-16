@@ -1,6 +1,6 @@
-# Colorado Native Plant Finder
+# Plant Finder
 
-A quiz-based plant recommendation tool for Front Range and foothills gardeners in the Boulder/Loveland area (Zone 5b–6a). Answer 6 questions about your yard and get 5 tailored native plant recommendations powered by Claude AI.
+A quiz-based plant recommendation tool. Answer 6 questions about your yard and get 5 tailored plant recommendations powered by Claude AI. Your location is detected automatically from your IP, or you can enter a ZIP code — recommendations are specific to your local climate and region.
 
 ## Local Development
 
@@ -16,6 +16,16 @@ npm run dev
 ```
 
 Open http://localhost:5173. Vite proxies `/api` requests to the Express server on port 3000.
+
+## Mock API Mode
+
+To develop without consuming Anthropic API credits, set `MOCK_API=true` in your `.env`:
+
+```
+MOCK_API=true
+```
+
+The server will return sample plant data from `mockPlants.js` instead of calling Claude. The health check will also pass immediately without validating the API key.
 
 ## Production Build
 
@@ -35,7 +45,7 @@ npm start       # serves everything on port 3000
 
 ## Stack
 
-- **Frontend**: React 18 + Vite (no CSS framework — custom CSS with Colorado-themed design)
+- **Frontend**: React 18 + Vite (no CSS framework — custom CSS)
 - **Backend**: Node.js + Express
 - **AI**: Anthropic Claude (`claude-opus-4-6`) via `@anthropic-ai/sdk`
 - **Deployment**: Vercel
@@ -49,4 +59,4 @@ npm start       # serves everything on port 3000
 5. Irrigation preference
 6. Special concerns — deer, fire zone, pet-safe, wind, etc. *(multi-select, optional)*
 
-Each result includes: why it fits your specific yard, companion plants, fire safety rating (Low / Medium / High), bloom time, water needs, height, and links to local Front Range nurseries.
+Each result includes: why it fits your specific yard, companion plants, fire safety rating (Low / Medium / High), bloom time, water needs, height, and links to local nurseries.
