@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react'
+
 const FIRE_STYLES = {
   Low: {
     bg: '#d4edda',
@@ -24,6 +26,20 @@ const FIRE_STYLES = {
 
 export default function PlantCard({ plant, index }) {
   const fire = FIRE_STYLES[plant.fireSafetyRating] ?? FIRE_STYLES.Medium
+  const [images, setImages] = useState([])
+
+  useEffect(() => {
+    const seen = new Set()
+    const tryFetch = (name) =>
+      fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(name)}`)
+        .then((r) => r.json())
+        .then((data) => { if (data.thumbnail?.source) seen.add(data.thumbnail.source) })
+        .catch(() => {})
+
+    Promise.all([tryFetch(plant.scientificName), tryFetch(plant.commonName)]).then(() => {
+      setImages([...seen].slice(0, 2))
+    })
+  }, [plant.scientificName, plant.commonName])
 
   return (
     <div className="plant-card">
@@ -46,6 +62,19 @@ export default function PlantCard({ plant, index }) {
           🔥 {fire.label}
         </div>
       </div>
+
+      {images.length > 0 && (
+        <div className="plant-images">
+          {images.map((src, i) => (
+            <img
+              key={i}
+              src={src}
+              alt={i === 0 ? plant.commonName : plant.scientificName}
+              className="plant-image"
+            />
+          ))}
+        </div>
+      )}
 
       <p className="plant-why">{plant.whyItFits}</p>
 

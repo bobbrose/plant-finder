@@ -525,6 +525,28 @@ body {
   align-self: flex-start;
 }
 
+.plant-images {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.plant-image {
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+@media (max-width: 520px) {
+  .plant-image {
+    width: 120px;
+    height: 120px;
+  }
+}
+
 .plant-why {
   color: var(--text);
   line-height: 1.65;
