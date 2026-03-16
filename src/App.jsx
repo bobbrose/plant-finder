@@ -50,9 +50,17 @@ export default function App() {
           }
         } else {
           setLocationPhase('needs-zip')
+          if (import.meta.env.VITE_DEBUG === 'true') {
+            console.log('[DEBUG] IP location lookup returned no city, falling back to ZIP input. Raw response:', data)
+          }
         }
       })
-      .catch(() => setLocationPhase('needs-zip'))
+      .catch((err) => {
+        setLocationPhase('needs-zip')
+        if (import.meta.env.VITE_DEBUG === 'true') {
+          console.log('[DEBUG] IP location lookup failed, falling back to ZIP input. Error:', err)
+        }
+      })
   }, [])
 
   const handleZipSubmit = (e) => {
