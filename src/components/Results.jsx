@@ -1,12 +1,32 @@
 import PlantCard from './PlantCard.jsx'
+import { QUESTIONS, getAnswerLabel } from '../questions.js'
 
-export default function Results({ phase, plants, error, onReset }) {
+function AnswerSummary({ answers }) {
+  if (!answers) return null
+  const filled = QUESTIONS.filter((q) => {
+    const val = answers[q.id]
+    return Array.isArray(val) ? val.length > 0 : val !== ''
+  })
+  return (
+    <div className="quiz-history">
+      {filled.map((q) => (
+        <div key={q.id} className="history-item">
+          <span className="history-icon">{q.icon}</span>
+          <span className="history-label">{q.title}:</span>
+          <span className="history-value">{getAnswerLabel(q, answers[q.id])}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export default function Results({ phase, plants, error, onReset, location, answers }) {
   if (phase === 'loading') {
     return (
       <div className="results-loading">
         <span className="loading-spinner">🌿</span>
         <h2>Finding your perfect plants…</h2>
-        <p>Searching Colorado's native plant database for your yard's conditions</p>
+        <p>Searching for plants suited to your yard's conditions</p>
       </div>
     )
   }
@@ -26,10 +46,11 @@ export default function Results({ phase, plants, error, onReset }) {
 
   return (
     <div className="results">
+      <AnswerSummary answers={answers} />
       <div className="results-header">
-        <h2>Your Colorado Native Plant Matches</h2>
+        <h2>Your Plant Matches</h2>
         <p className="results-subtitle">
-          5 plants selected for your Front Range yard · Zone 5b–6a
+          {location ? `5 plants selected for your yard in ${location}` : '5 plants selected for your yard conditions'}
         </p>
       </div>
 

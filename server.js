@@ -3,6 +3,7 @@ import express from 'express'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import Anthropic from '@anthropic-ai/sdk'
+import { getRandomMockPlants } from './mockPlants.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -12,22 +13,52 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 app.use(express.json())
 app.use(express.static(join(__dirname, 'dist')))
 
-const NURSERIES = `- Harlequin's Gardens (Boulder): https://harlequinsgardens.com
-- Fossil Creek Nursery (Fort Collins): https://fossilcreeknursery.com
-- High Plains Environmental Center (Loveland): https://www.hpec.org
-- Tagawa Gardens (Centennial): https://tagawagardens.com
-- Echter's Nursery & Garden Center (Arvada): https://www.echters.com
-- Bath Garden Center & Nursery (Fort Collins): https://www.bathgardencenter.com
-- O'Toole's Garden Centers (Denver Metro): https://www.otooles.com`
+
+const MOCK_MODE = process.env.MOCK_API === 'true'
+if (MOCK_MODE) console.log('⚠️  MOCK_API mode enabled — Claude API will not be called')
+
+app.get('/api/health', async (_req, res) => {
+  if (MOCK_MODE) return res.json({ ok: true, mock: true })
+
+  console.log('Health check — ANTHROPIC_API_KEY set:', !!process.env.ANTHROPIC_API_KEY)
+  try {
+    await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1,
+      messages: [{ role: 'user', content: 'hi' }],
+    })
+    res.json({ ok: true })
+  } catch (err) {
+    console.error('Health check error:', err.status, err.message)
+    const message = err.status === 401
+      ? 'API key is missing or invalid.'
+      : `Could not reach the Anthropic API. (${err.status ?? err.code ?? err.message})`
+    res.status(503).json({ ok: false, error: message })
+  }
+})
 
 app.post('/api/plants', async (req, res) => {
-  const { sunExposure, soilType, terrain, goals, irrigation, concerns } = req.body
+  const { sunExposure, soilType, terrain, goals, irrigation, concerns, location } = req.body
 
   if (!sunExposure || !soilType || !terrain || !Array.isArray(goals) || goals.length === 0 || !irrigation) {
     return res.status(400).json({ error: 'Please answer all required quiz questions.' })
   }
 
-  const prompt = `You are a Colorado native plant expert for the Front Range and foothills (Boulder/Loveland/Fort Collins area, USDA Hardiness Zone 5b-6a).
+  if (MOCK_MODE) {
+    await new Promise((r) => setTimeout(r, 1200)) // simulate API delay
+    return res.json({ plants: getRandomMockPlants(3), mock: true })
+  }
+
+  let locationStr = 'an unspecified location'
+  if (location) {
+    if (location.city && location.region) {
+      locationStr = `${location.city}, ${location.region}${location.country && location.country !== 'United States' ? `, ${location.country}` : ''}`
+    } else if (location.zip) {
+      locationStr = `the area around ZIP code ${location.zip}`
+    }
+  }
+
+  const prompt = `You are an expert horticulturalist helping a gardener in ${locationStr}.
 
 A gardener described their yard:
 - Sun exposure: ${sunExposure}
@@ -37,14 +68,14 @@ A gardener described their yard:
 - Irrigation preference: ${irrigation}
 - Special concerns: ${concerns && concerns.length > 0 ? concerns.join(', ') : 'None specified'}
 
-Recommend exactly 5 Colorado native plants perfectly suited to these conditions. Prioritize plants truly native to Colorado that thrive in Zone 5b-6a.
+Recommend exactly 5 plants perfectly suited to the local climate of ${locationStr} and these yard conditions. Consider the regional hardiness zone, typical rainfall patterns, and locally available species.
 
 Return ONLY a valid JSON array — no markdown, no code fences, no explanation before or after:
 [
   {
     "commonName": "string",
     "scientificName": "string",
-    "whyItFits": "2-3 sentences explaining why this specific plant matches their exact yard conditions",
+    "whyItFits": "2-3 sentences explaining why this specific plant matches their exact yard conditions and local climate",
     "companionPlants": ["Name 1", "Name 2", "Name 3"],
     "fireSafetyRating": "Low",
     "fireSafetyNote": "One sentence about fire safety characteristics",
@@ -58,8 +89,7 @@ Return ONLY a valid JSON array — no markdown, no code fences, no explanation b
 
 fireSafetyRating must be exactly one of: "Low" (fire-resistant, good for WUI zones), "Medium" (moderate risk), or "High" (higher fuel load, avoid near structures in fire zones).
 
-For localNurseries, pick 2-3 from this list that would most likely stock this specific plant:
-${NURSERIES}`
+For localNurseries, suggest 2-3 real nurseries near ${locationStr} that would likely stock this specific plant. Include real URLs if you know them. If you are not confident about specific nurseries in the area, use an empty array.`
 
   try {
     const message = await anthropic.messages.create({
@@ -94,7 +124,7 @@ app.get('*', (_req, res) => {
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
-  console.log(`Colorado Native Plant Finder running at http://localhost:${PORT}`)
+  console.log(`Plant Finder running at http://localhost:${PORT}`)
 })
 
 export default app
