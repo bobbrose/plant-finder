@@ -83,7 +83,7 @@ body {
   border: none;
   cursor: pointer;
   font-size: 0.8rem;
-  opacity: 0.7;
+  opacity: 0.9;
   padding: 0 0.1rem;
   line-height: 1;
 }
@@ -152,6 +152,95 @@ body {
   color: rgba(255, 255, 255, 0.65);
   font-size: 0.78rem;
   line-height: 1.8;
+}
+
+/* ---- ABOUT DIALOG ---- */
+
+.about-link {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  opacity: 0.65;
+  padding: 0;
+  text-decoration: underline dotted;
+}
+
+.about-link:hover {
+  opacity: 1;
+}
+
+.about-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.about-dialog {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 2rem 2.5rem;
+  max-width: 340px;
+  width: 90%;
+  text-align: center;
+  position: relative;
+  box-shadow: var(--shadow-hover);
+}
+
+.about-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--text-light);
+  line-height: 1;
+}
+
+.about-close:hover {
+  color: var(--text);
+}
+
+.about-logo {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.about-title {
+  font-size: 1.4rem;
+  color: var(--green-dark);
+  margin-bottom: 1rem;
+}
+
+.about-line {
+  color: var(--text-light);
+  font-size: 0.88rem;
+  margin-bottom: 0.6rem;
+}
+
+.about-line a {
+  color: var(--green-mid);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.about-line a:hover {
+  text-decoration: underline;
+}
+
+.about-github {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text) !important;
+  font-weight: 500 !important;
 }
 
 /* ---- LOCATION PROMPT ---- */
