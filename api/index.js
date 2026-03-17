@@ -96,7 +96,15 @@ For localNurseries, suggest 2-3 real nurseries near ${locationStr} that would li
       messages: [{ role: 'user', content: prompt }],
     })
 
-    const text = message.content[0].text.trim()
+    let text = message.content[0].text.trim()
+    // Strip markdown code fences if Claude included them
+    text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')
+    // Extract the JSON array in case there's surrounding text
+    const arrayStart = text.indexOf('[')
+    const arrayEnd = text.lastIndexOf(']')
+    if (arrayStart !== -1 && arrayEnd !== -1) {
+      text = text.slice(arrayStart, arrayEnd + 1)
+    }
     const plants = JSON.parse(text)
 
     if (!Array.isArray(plants) || plants.length === 0) {
