@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import Quiz from './components/Quiz.jsx'
 import Results from './components/Results.jsx'
 import './App.css'
@@ -312,6 +313,7 @@ export default function App() {
           </div>
         </div>
       )}
+      <Analytics />
     </div>
   )
 }
