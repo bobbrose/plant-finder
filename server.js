@@ -17,6 +17,37 @@ app.use(express.static(join(__dirname, 'dist')))
 const MOCK_MODE = process.env.MOCK_API === 'true'
 if (MOCK_MODE) console.log('⚠️  MOCK_API mode enabled — Claude API will not be called')
 
+const CACHE_MAX = 500
+const cache = new Map()
+
+function cacheGet(key) {
+  if (!cache.has(key)) return null
+  const value = cache.get(key)
+  cache.delete(key)
+  cache.set(key, value)
+  return value
+}
+
+function cacheSet(key, value) {
+  if (cache.has(key)) cache.delete(key)
+  cache.set(key, value)
+  if (cache.size > CACHE_MAX) {
+    cache.delete(cache.keys().next().value)
+  }
+}
+
+function cacheKey({ sunExposure, soilType, terrain, goals, irrigation, concerns, location }) {
+  return JSON.stringify({
+    sunExposure,
+    soilType,
+    terrain,
+    goals: [...(goals ?? [])].sort(),
+    irrigation,
+    concerns: [...(concerns ?? [])].sort(),
+    location: location?.zip ?? (location?.city && location?.region ? `${location.city},${location.region}` : null),
+  })
+}
+
 app.get('/api/health', async (_req, res) => {
   if (MOCK_MODE) return res.json({ ok: true, mock: true })
 
@@ -95,6 +126,15 @@ For localNurseries, suggest 2-3 real nurseries near ${locationStr} that would li
     console.log('[DEBUG] AI prompt:\n' + prompt)
   }
 
+  const key = cacheKey(req.body)
+  console.log(`Cache size: ${cache.size} | Key: ${key}`)
+  const cached = cacheGet(key)
+  if (cached) {
+    console.log(`Cache HIT — returning cached result (cache size: ${cache.size})`)
+    return res.json({ plants: cached, cached: true })
+  }
+  console.log('Cache MISS — calling Claude API')
+
   try {
     const message = await anthropic.messages.create({
       model: 'claude-opus-4-6',
@@ -109,6 +149,8 @@ For localNurseries, suggest 2-3 real nurseries near ${locationStr} that would li
       throw new Error('Invalid response format')
     }
 
+    cacheSet(key, plants)
+    console.log(`Cache SET — cache size now: ${cache.size}`)
     res.json({ plants })
   } catch (err) {
     console.error('Error getting plant recommendations:', err.message)
