@@ -80,6 +80,7 @@ export const QUESTIONS = [
       { value: 'Tolerates high winds', label: 'Wind Tolerant' },
       { value: 'Susceptible to late spring freezes', label: 'Late Spring Freeze Risk' },
       { value: 'Adjacent to areas with lawn chemical spray drift', label: 'Near Lawn Chemicals' },
+      { value: 'Must be rabbit resistant', label: 'Rabbit Resistant' },
     ],
   },
 ]
