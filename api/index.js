@@ -131,6 +131,7 @@ For localNurseries, suggest 5-7 real nurseries within 10 miles of ${locationStr}
     return res.json({ plants: cached, cached: true })
   }
 
+  let rawText
   try {
     const message = await anthropic.messages.create({
       model: 'claude-opus-4-6',
@@ -138,9 +139,9 @@ For localNurseries, suggest 5-7 real nurseries within 10 miles of ${locationStr}
       messages: [{ role: 'user', content: prompt }],
     })
 
-    let text = message.content[0].text.trim()
+    rawText = message.content[0].text.trim()
     // Strip markdown code fences if Claude included them
-    text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')
+    let text = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')
     // Extract the JSON array in case there's surrounding text
     const arrayStart = text.indexOf('[')
     const arrayEnd = text.lastIndexOf(']')
@@ -156,12 +157,16 @@ For localNurseries, suggest 5-7 real nurseries within 10 miles of ${locationStr}
     cacheSet(key, plants)
     res.json({ plants })
   } catch (err) {
-    console.error('Error getting plant recommendations:', err.message)
     if (err instanceof SyntaxError) {
+      console.error('Plant recommendations: JSON parse error:', err.message)
+      console.error('Raw Claude response was:', rawText)
       res.status(500).json({ error: 'Received an unexpected response format. Please try again.' })
     } else if (err.status === 401) {
+      console.error('Plant recommendations: API auth error (401):', err.message)
       res.status(500).json({ error: 'API key is invalid. Please check server configuration.' })
     } else {
+      console.error('Plant recommendations: unexpected error:', err.status ?? '', err.message)
+      console.error(err.stack)
       res.status(500).json({ error: 'Failed to get plant recommendations. Please try again.' })
     }
   }

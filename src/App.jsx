@@ -161,6 +161,7 @@ export default function App() {
       setPlants(data.plants)
       setPhase('results')
     } catch (err) {
+      console.error('Plant recommendations request failed:', err)
       setError(err.message)
       setPhase('error')
     }
