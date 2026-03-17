@@ -25,7 +25,7 @@ export default function Results({ phase, plants, error, onReset, location, answe
     return (
       <div className="results-loading">
         <span className="loading-spinner">🌿</span>
-        <h2>Finding your perfect plants…</h2>
+        <h2>Picking your perfect plants…</h2>
         <p>Searching for plants suited to your yard's conditions</p>
       </div>
     )
@@ -48,9 +48,9 @@ export default function Results({ phase, plants, error, onReset, location, answe
     <div className="results">
       <AnswerSummary answers={answers} />
       <div className="results-header">
-        <h2>Your Plant Matches</h2>
+        <h2>Your Plant Picks</h2>
         <p className="results-subtitle">
-          {location ? `5 plants selected for your yard in ${location}` : '5 plants selected for your yard conditions'}
+          {location ? `${plants.length} plants picked for your yard in ${location}` : `${plants.length} plants picked for your yard conditions`}
         </p>
       </div>
 

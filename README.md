@@ -1,4 +1,4 @@
-# Plant Finder
+# Plant Picker
 
 A quiz-based plant recommendation tool. Answer 6 questions about your yard and get 5 tailored plant recommendations powered by Claude AI. Your location is detected automatically from your IP, or you can enter a ZIP code — recommendations are specific to your local climate and region.
 

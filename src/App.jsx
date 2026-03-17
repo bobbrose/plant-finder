@@ -20,6 +20,7 @@ export default function App() {
   const [location, setLocation] = useState(null)
   const [locationPhase, setLocationPhase] = useState('detecting') // 'detecting' | 'detected' | 'needs-zip'
   const [zipInput, setZipInput] = useState('')
+  const [hardinessZone, setHardinessZone] = useState('')
 
   useEffect(() => {
     fetch('/api/health')
@@ -46,6 +47,7 @@ export default function App() {
           const loc = { city: data.city, region: data.region, country: data.country_name, zip: data.postal }
           setLocation(loc)
           setLocationPhase('detected')
+          fetchZone(loc.zip)
           if (import.meta.env.VITE_DEBUG === 'true') {
             console.log('[DEBUG] Inferred location from IP:', loc)
           }
@@ -64,12 +66,21 @@ export default function App() {
       })
   }, [])
 
+  const fetchZone = (zip) => {
+    if (!zip) return
+    fetch(`https://phzmapi.org/${zip}.json`)
+      .then((r) => r.json())
+      .then((data) => { if (data.zone) setHardinessZone(data.zone) })
+      .catch(() => {})
+  }
+
   const handleZipSubmit = (e) => {
     e.preventDefault()
     if (zipInput.trim()) {
       const loc = { zip: zipInput.trim() }
       setLocation(loc)
       setLocationPhase('detected')
+      fetchZone(loc.zip)
       if (import.meta.env.VITE_DEBUG === 'true') {
         console.log('[DEBUG] Location set from ZIP input:', loc)
       }
@@ -121,8 +132,8 @@ export default function App() {
         <div className="header-content">
           <span className="header-icon">🌿</span>
           <div>
-            <h1 className="header-title" onClick={handleReset}>Plant Finder</h1>
-            {label && <p className="header-subtitle">Personalized recommendations for {label}</p>}
+            <h1 className="header-title" onClick={handleReset}>Plant Picker</h1>
+            {label && <p className="header-subtitle">Personalized recommendations for {label}{hardinessZone ? ` · Zone ${hardinessZone}` : ''}</p>}
           </div>
         </div>
       </header>
@@ -188,7 +199,7 @@ export default function App() {
       </main>
 
       <footer className="app-footer">
-        <p>Plant recommendations powered by AI{label ? ` · ${label}` : ''}</p>
+        <p>Plant Picker · AI-powered recommendations{label ? ` · ${label}` : ''}</p>
         <p>Nursery links are suggestions — availability varies by season. Call ahead before visiting.</p>
       </footer>
     </div>

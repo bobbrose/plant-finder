@@ -117,7 +117,7 @@ export default function Quiz({ onSubmit }) {
               onClick={() => onSubmit(answers)}
               disabled={!isAnswered}
             >
-              Find My Plants 🌱
+              Pick My Plants 🌱
             </button>
           ) : (
             <button
@@ -132,7 +132,7 @@ export default function Quiz({ onSubmit }) {
       </div>
 
       {question.optional && (
-        <p className="optional-note">This step is optional — click "Find My Plants" to skip</p>
+        <p className="optional-note">This step is optional — click "Pick My Plants" to skip</p>
       )}
     </div>
   )
