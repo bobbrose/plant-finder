@@ -1,14 +1,14 @@
 {
   "buildCommand": "npm run build",
   "functions": {
-    "server.js": {
+    "api/index.js": {
       "includeFiles": "dist/**"
     }
   },
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/server.js"
+      "dest": "/api/index.js"
     }
   ]
 }
