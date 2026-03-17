@@ -68,7 +68,7 @@ A gardener described their yard:
 - Irrigation preference: ${irrigation}
 - Special concerns: ${concerns && concerns.length > 0 ? concerns.join(', ') : 'None specified'}
 
-Recommend exactly 5 plants perfectly suited to the local climate of ${locationStr} and these yard conditions. Consider the regional hardiness zone, typical rainfall patterns, and locally available species.
+Recommend exactly 5 plants perfectly suited to the local climate of ${locationStr} and these yard conditions. Consider the regional hardiness zone, typical rainfall patterns, and locally available species. Favor native species, but don't exclude non-native ones as well.
 
 Return ONLY a valid JSON array — no markdown, no code fences, no explanation before or after:
 [
