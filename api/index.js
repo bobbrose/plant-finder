@@ -125,11 +125,13 @@ For localNurseries, suggest 5-7 real nurseries within 10 miles of ${locationStr}
   }
 
   const key = cacheKey(req.body)
+  console.log(`Cache size: ${cache.size} | Key: ${key}`)
   const cached = cacheGet(key)
   if (cached) {
-    console.log(`Cache hit — returning cached result (cache size: ${cache.size})`)
+    console.log(`Cache HIT — returning cached result (cache size: ${cache.size})`)
     return res.json({ plants: cached, cached: true })
   }
+  console.log('Cache MISS — calling Claude API')
 
   let rawText
   try {
@@ -155,6 +157,7 @@ For localNurseries, suggest 5-7 real nurseries within 10 miles of ${locationStr}
     }
 
     cacheSet(key, plants)
+    console.log(`Cache SET — cache size now: ${cache.size}`)
     res.json({ plants })
   } catch (err) {
     if (err instanceof SyntaxError) {
