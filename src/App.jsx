@@ -16,6 +16,7 @@ export default function App() {
   const [plants, setPlants] = useState([])
   const [error, setError] = useState('')
   const [submittedAnswers, setSubmittedAnswers] = useState(null)
+  const [resetKey, setResetKey] = useState(0)
   const [location, setLocation] = useState(null)
   const [locationPhase, setLocationPhase] = useState('detecting') // 'detecting' | 'detected' | 'needs-zip'
   const [zipInput, setZipInput] = useState('')
@@ -109,6 +110,7 @@ export default function App() {
     setPlants([])
     setError('')
     setSubmittedAnswers(null)
+    setResetKey((k) => k + 1)
   }
 
   const label = locationLabel(location)
@@ -119,7 +121,7 @@ export default function App() {
         <div className="header-content">
           <span className="header-icon">🌿</span>
           <div>
-            <h1>Plant Finder</h1>
+            <h1 className="header-title" onClick={handleReset}>Plant Finder</h1>
             {label && <p className="header-subtitle">Personalized recommendations for {label}</p>}
           </div>
         </div>
@@ -171,7 +173,7 @@ export default function App() {
           </div>
         )}
         {apiStatus === 'ok' && locationPhase === 'detected' && phase === 'quiz' && (
-          <Quiz onSubmit={handleSubmit} />
+          <Quiz key={resetKey} onSubmit={handleSubmit} />
         )}
         {apiStatus === 'ok' && locationPhase === 'detected' && (phase === 'loading' || phase === 'results' || phase === 'error') && (
           <Results

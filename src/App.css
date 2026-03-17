@@ -60,6 +60,14 @@ body {
   letter-spacing: -0.3px;
 }
 
+.header-title {
+  cursor: pointer;
+}
+
+.header-title:hover {
+  opacity: 0.85;
+}
+
 .header-subtitle {
   font-size: 0.85rem;
   opacity: 0.85;
@@ -532,18 +540,24 @@ body {
 }
 
 .plant-image {
-  width: 160px;
-  height: 160px;
+  width: 176px;
+  height: 176px;
   object-fit: cover;
   border-radius: 8px;
   border: 1px solid var(--border);
   flex-shrink: 0;
+  display: block;
+  transition: opacity 0.15s;
+}
+
+.plant-image:hover {
+  opacity: 0.85;
 }
 
 @media (max-width: 520px) {
   .plant-image {
-    width: 120px;
-    height: 120px;
+    width: 132px;
+    height: 132px;
   }
 }
 
@@ -618,6 +632,16 @@ body {
   margin-bottom: 1rem;
 }
 
+.plant-wiki-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+}
+
+.plant-wiki-link:hover {
+  opacity: 0.75;
+}
+
 .chip {
   background: var(--sky-light);
   color: var(--sky);
@@ -625,6 +649,15 @@ body {
   padding: 0.22rem 0.65rem;
   font-size: 0.79rem;
   font-weight: 500;
+}
+
+.chip-link {
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.chip-link:hover {
+  background: #c0dff2;
 }
 
 .nursery-links {

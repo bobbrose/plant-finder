@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react'
 
+function wikiUrl(name) {
+  return `https://en.wikipedia.org/wiki/${encodeURIComponent(name.trim().replace(/ /g, '_'))}`
+}
+
 const FIRE_STYLES = {
   Low: {
     bg: '#d4edda',
@@ -47,8 +51,12 @@ export default function PlantCard({ plant, index }) {
         <div className="plant-number">#{index + 1}</div>
 
         <div className="plant-names">
-          <h3 className="plant-common">{plant.commonName}</h3>
-          <p className="plant-scientific">{plant.scientificName}</p>
+          <h3 className="plant-common">
+            <a href={wikiUrl(plant.scientificName)} target="_blank" rel="noopener noreferrer" className="plant-wiki-link">{plant.commonName}</a>
+          </h3>
+          <p className="plant-scientific">
+            <a href={wikiUrl(plant.scientificName)} target="_blank" rel="noopener noreferrer" className="plant-wiki-link">{plant.scientificName}</a>
+          </p>
         </div>
 
         <div
@@ -66,12 +74,13 @@ export default function PlantCard({ plant, index }) {
       {images.length > 0 && (
         <div className="plant-images">
           {images.map((src, i) => (
-            <img
-              key={i}
-              src={src}
-              alt={i === 0 ? plant.commonName : plant.scientificName}
-              className="plant-image"
-            />
+            <a key={i} href={wikiUrl(plant.scientificName)} target="_blank" rel="noopener noreferrer">
+              <img
+                src={src}
+                alt={i === 0 ? plant.commonName : plant.scientificName}
+                className="plant-image"
+              />
+            </a>
           ))}
         </div>
       )}
@@ -123,9 +132,9 @@ export default function PlantCard({ plant, index }) {
           <p className="card-section-label">Companion Plants</p>
           <div className="companion-chips">
             {plant.companionPlants.map((name, i) => (
-              <span key={i} className="chip">
+              <a key={i} href={wikiUrl(name)} target="_blank" rel="noopener noreferrer" className="chip chip-link">
                 {name}
-              </span>
+              </a>
             ))}
           </div>
         </div>
