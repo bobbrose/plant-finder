@@ -40,7 +40,7 @@ function cacheKey({ sunExposure, soilType, terrain, goals, irrigation, concerns,
     goals: [...(goals ?? [])].sort(),
     irrigation,
     concerns: [...(concerns ?? [])].sort(),
-    location: location?.zip ?? (location?.city && location?.region ? `${location.city},${location.region}` : null),
+    location: location?.freeText ?? location?.zip ?? (location?.city && location?.region ? `${location.city},${location.region}` : null),
   })
 }
 
@@ -78,7 +78,9 @@ app.post('/api/plants', async (req, res) => {
 
   let locationStr = 'an unspecified location'
   if (location) {
-    if (location.city && location.region) {
+    if (location.freeText) {
+      locationStr = location.freeText
+    } else if (location.city && location.region) {
       locationStr = `${location.city}, ${location.region}${location.country && location.country !== 'United States' ? `, ${location.country}` : ''}`
     } else if (location.zip) {
       locationStr = `the area around ZIP code ${location.zip}`

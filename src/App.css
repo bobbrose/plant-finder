@@ -72,6 +72,66 @@ body {
   font-size: 0.85rem;
   opacity: 0.85;
   margin-top: 0.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.location-edit-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  padding: 0 0.1rem;
+  line-height: 1;
+}
+
+.location-edit-btn:hover {
+  opacity: 1;
+}
+
+.location-edit-form {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.location-edit-input {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  color: white;
+  font-size: 0.82rem;
+  padding: 0.15rem 0.4rem;
+  font-family: inherit;
+  width: 180px;
+}
+
+.location-edit-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.location-edit-input:focus {
+  outline: none;
+  border-color: white;
+}
+
+.location-edit-confirm,
+.location-edit-cancel {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  padding: 0 0.1rem;
+}
+
+.location-edit-confirm:hover,
+.location-edit-cancel:hover {
+  opacity: 1;
 }
 
 /* ---- MAIN ---- */

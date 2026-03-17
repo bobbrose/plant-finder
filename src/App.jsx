@@ -5,6 +5,7 @@ import './App.css'
 
 function locationLabel(loc) {
   if (!loc) return ''
+  if (loc.freeText) return loc.freeText
   if (loc.zip && !loc.city) return `ZIP ${loc.zip}`
   return loc.region ? `${loc.city}, ${loc.region}` : loc.city
 }
@@ -21,6 +22,8 @@ export default function App() {
   const [locationPhase, setLocationPhase] = useState('detecting') // 'detecting' | 'detected' | 'needs-zip'
   const [zipInput, setZipInput] = useState('')
   const [hardinessZone, setHardinessZone] = useState('')
+  const [editingLocation, setEditingLocation] = useState(false)
+  const [editInput, setEditInput] = useState('')
 
   useEffect(() => {
     fetch('/api/health')
@@ -66,11 +69,57 @@ export default function App() {
       })
   }, [])
 
+  const handleLocationEdit = async (e) => {
+    e.preventDefault()
+    const input = editInput.trim()
+    if (!input) return
+    setHardinessZone('')
+    setEditingLocation(false)
+
+    if (/^\d{5}(-\d{4})?$/.test(input)) {
+      setLocation({ zip: input })
+      fetchZone(input)
+      return
+    }
+
+    // Geocode city/state via Nominatim
+    try {
+      const params = new URLSearchParams({ q: input, format: 'json', limit: 1, addressdetails: 1 })
+      const r = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
+        headers: { 'User-Agent': 'PlantPicker/1.0' },
+      })
+      const data = await r.json()
+      if (data.length > 0) {
+        const { lat, lon, address } = data[0]
+        const city = address?.city || address?.town || address?.village || address?.hamlet
+        const region = address?.state
+        setLocation(city && region ? { city, region } : { freeText: input })
+        fetchZoneByCoords(lat, lon)
+      } else {
+        setLocation({ freeText: input })
+      }
+    } catch {
+      setLocation({ freeText: input })
+    }
+  }
+
   const fetchZone = (zip) => {
     if (!zip) return
     fetch(`https://phzmapi.org/${zip}.json`)
       .then((r) => r.json())
       .then((data) => { if (data.zone) setHardinessZone(data.zone) })
+      .catch(() => {})
+  }
+
+  const fetchZoneByCoords = (lat, lon) => {
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=18&addressdetails=1`, {
+      headers: { 'User-Agent': 'PlantPicker/1.0' },
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        const zip = data.address?.postcode?.slice(0, 5)
+        if (zip) fetchZone(zip)
+      })
       .catch(() => {})
   }
 
@@ -133,7 +182,33 @@ export default function App() {
           <span className="header-icon">🌿</span>
           <div>
             <h1 className="header-title" onClick={handleReset}>Plant Picker</h1>
-            {label && <p className="header-subtitle">Personalized recommendations for {label}{hardinessZone ? ` · Zone ${hardinessZone}` : ''}</p>}
+            {label && (
+              <p className="header-subtitle">
+                {editingLocation ? (
+                  <form onSubmit={handleLocationEdit} className="location-edit-form">
+                    <input
+                      value={editInput}
+                      onChange={(e) => setEditInput(e.target.value)}
+                      className="location-edit-input"
+                      placeholder="City, State or ZIP"
+                      autoFocus
+                      onKeyDown={(e) => e.key === 'Escape' && setEditingLocation(false)}
+                    />
+                    <button type="submit" className="location-edit-confirm">✓</button>
+                    <button type="button" className="location-edit-cancel" onClick={() => setEditingLocation(false)}>✕</button>
+                  </form>
+                ) : (
+                  <>
+                    Personalized recommendations for {label}{hardinessZone ? ` · Zone ${hardinessZone}` : ''}
+                    <button
+                      className="location-edit-btn"
+                      onClick={() => { setEditInput(label); setEditingLocation(true) }}
+                      title="Change location"
+                    >✏️</button>
+                  </>
+                )}
+              </p>
+            )}
           </div>
         </div>
       </header>
