@@ -45,49 +45,30 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    const applyIpData = (loc) => {
-      setLocation(loc)
-      setLocationPhase('detected')
-      fetchZone(loc.zip)
-      if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[DEBUG] Inferred location from IP:', loc)
-      }
-    }
-
-    const tryFallback = (reason) => {
-      if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[DEBUG] ipapi.co failed, trying freeipapi.com fallback. Reason:', reason)
-      }
-      fetch('https://freeipapi.com/api/json')
-        .then((r) => r.json())
-        .then((data) => {
-          if (data.cityName && data.cityName !== '-') {
-            applyIpData({ city: data.cityName, region: data.regionName, country: data.countryName, zip: data.zipCode })
-          } else {
-            setLocationPhase('needs-zip')
-            if (import.meta.env.VITE_DEBUG === 'true') {
-              console.log('[DEBUG] freeipapi.com fallback also failed. Raw response:', data)
-            }
-          }
-        })
-        .catch((err) => {
-          setLocationPhase('needs-zip')
-          if (import.meta.env.VITE_DEBUG === 'true') {
-            console.log('[DEBUG] freeipapi.com fallback also failed. Error:', err)
-          }
-        })
-    }
-
-    fetch('https://ipapi.co/json/')
+    fetch('https://freeipapi.com/api/json')
       .then((r) => r.json())
       .then((data) => {
-        if (data.city && !data.error) {
-          applyIpData({ city: data.city, region: data.region, country: data.country_name, zip: data.postal })
+        if (data.cityName && data.cityName !== '-') {
+          const loc = { city: data.cityName, region: data.regionName, country: data.countryName, zip: data.zipCode }
+          setLocation(loc)
+          setLocationPhase('detected')
+          fetchZone(loc.zip)
+          if (import.meta.env.VITE_DEBUG === 'true') {
+            console.log('[DEBUG] Inferred location from IP:', loc)
+          }
         } else {
-          tryFallback(`no city or error in response: ${JSON.stringify(data)}`)
+          setLocationPhase('needs-zip')
+          if (import.meta.env.VITE_DEBUG === 'true') {
+            console.log('[DEBUG] IP location lookup failed. Raw response:', data)
+          }
         }
       })
-      .catch((err) => tryFallback(err))
+      .catch((err) => {
+        setLocationPhase('needs-zip')
+        if (import.meta.env.VITE_DEBUG === 'true') {
+          console.log('[DEBUG] IP location lookup failed. Error:', err)
+        }
+      })
   }, [])
 
   const applyLocationInput = async (input) => {
