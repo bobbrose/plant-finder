@@ -77,6 +77,24 @@ function cacheKey({ plantTypes, sunExposure, soilType, terrain, goals, irrigatio
   })
 }
 
+app.get('/api/location', async (req, res) => {
+  const ip = (req.headers['x-forwarded-for'] || req.ip || '').split(',')[0].trim()
+  try {
+    const url = ip && ip !== '::1' && ip !== '127.0.0.1'
+      ? `https://freeipapi.com/api/json/${ip}`
+      : 'https://freeipapi.com/api/json'
+    const r = await fetch(url)
+    const data = await r.json()
+    if (data.cityName && data.cityName !== '-') {
+      res.json({ city: data.cityName, region: data.regionName, country: data.countryName, zip: data.zipCode })
+    } else {
+      res.json({})
+    }
+  } catch {
+    res.json({})
+  }
+})
+
 app.get('/api/health', async (_req, res) => {
   if (MOCK_MODE) return res.json({ ok: true, mock: true })
 

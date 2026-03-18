@@ -45,11 +45,11 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    fetch('https://freeipapi.com/api/json')
+    fetch('/api/location')
       .then((r) => r.json())
       .then((data) => {
-        if (data.cityName && data.cityName !== '-') {
-          const loc = { city: data.cityName, region: data.regionName, country: data.countryName, zip: data.zipCode }
+        if (data.city) {
+          const loc = { city: data.city, region: data.region, country: data.country, zip: data.zip }
           setLocation(loc)
           setLocationPhase('detected')
           fetchZone(loc.zip)
@@ -59,7 +59,7 @@ export default function App() {
         } else {
           setLocationPhase('needs-zip')
           if (import.meta.env.VITE_DEBUG === 'true') {
-            console.log('[DEBUG] IP location lookup failed. Raw response:', data)
+            console.log('[DEBUG] IP location lookup returned no city')
           }
         }
       })
