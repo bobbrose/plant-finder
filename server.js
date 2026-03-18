@@ -121,7 +121,7 @@ Return ONLY a valid JSON array — no markdown, no code fences, no explanation b
 
 fireSafetyRating must be exactly one of: "Low" (fire-resistant, good for WUI zones), "Medium" (moderate risk), or "High" (higher fuel load, avoid near structures in fire zones).
 
-For localNurseries, suggest 5-7 real nurseries within 10 miles of ${locationStr} that might stock this specific plant. Include real URLs if you know them. If you are not confident about specific nurseries in the area, use an empty array.`
+For localNurseries, suggest 5-7 real nurseries within 10 miles of ${locationStr} that might stock this specific plant. Include real URLs — try to deep link directly to the plant's page on the nursery website if you know it. If only the nursery homepage is known, use that. If you are not confident about specific nurseries in the area, use an empty array.`
 
   if (process.env.VITE_DEBUG === 'true') {
     console.log('[DEBUG] AI prompt:\n' + prompt)
