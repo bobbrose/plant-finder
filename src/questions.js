@@ -65,7 +65,6 @@ export const QUESTIONS = [
       { value: 'Erosion control', label: 'Erosion Control' },
       { value: 'Low maintenance and water-wise', label: 'Low Maintenance / Water-wise' },
       { value: 'Colorful blooms', label: 'Colorful Blooms' },
-      { value: 'Ground cover', label: 'Ground Cover' },
       { value: 'Privacy screening', label: 'Privacy Screening' },
       { value: 'Cut flowers', label: 'Cut Flowers' },
     ],
