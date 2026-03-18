@@ -58,22 +58,22 @@ export default function App() {
       if (import.meta.env.VITE_DEBUG === 'true') {
         console.log('[DEBUG] ipapi.co failed, trying ip-api.com fallback. Reason:', reason)
       }
-      fetch('https://ip-api.com/json/')
+      fetch('https://ipwho.is/')
         .then((r) => r.json())
         .then((data) => {
-          if (data.status === 'success' && data.city) {
-            applyIpData({ city: data.city, region: data.regionName, country: data.country, zip: data.zip })
+          if (data.success && data.city) {
+            applyIpData({ city: data.city, region: data.region, country: data.country, zip: data.postal })
           } else {
             setLocationPhase('needs-zip')
             if (import.meta.env.VITE_DEBUG === 'true') {
-              console.log('[DEBUG] ip-api.com fallback also failed. Raw response:', data)
+              console.log('[DEBUG] ipwho.is fallback also failed. Raw response:', data)
             }
           }
         })
         .catch((err) => {
           setLocationPhase('needs-zip')
           if (import.meta.env.VITE_DEBUG === 'true') {
-            console.log('[DEBUG] ip-api.com fallback also failed. Error:', err)
+            console.log('[DEBUG] ipwho.is fallback also failed. Error:', err)
           }
         })
     }
