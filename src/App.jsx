@@ -45,39 +45,53 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    const applyIpData = (loc) => {
+      setLocation(loc)
+      setLocationPhase('detected')
+      fetchZone(loc.zip)
+      if (import.meta.env.VITE_DEBUG === 'true') {
+        console.log('[DEBUG] Inferred location from IP:', loc)
+      }
+    }
+
+    const tryFallback = (reason) => {
+      if (import.meta.env.VITE_DEBUG === 'true') {
+        console.log('[DEBUG] ipapi.co failed, trying ip-api.com fallback. Reason:', reason)
+      }
+      fetch('https://ip-api.com/json/')
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.status === 'success' && data.city) {
+            applyIpData({ city: data.city, region: data.regionName, country: data.country, zip: data.zip })
+          } else {
+            setLocationPhase('needs-zip')
+            if (import.meta.env.VITE_DEBUG === 'true') {
+              console.log('[DEBUG] ip-api.com fallback also failed. Raw response:', data)
+            }
+          }
+        })
+        .catch((err) => {
+          setLocationPhase('needs-zip')
+          if (import.meta.env.VITE_DEBUG === 'true') {
+            console.log('[DEBUG] ip-api.com fallback also failed. Error:', err)
+          }
+        })
+    }
+
     fetch('https://ipapi.co/json/')
       .then((r) => r.json())
       .then((data) => {
         if (data.city && !data.error) {
-          const loc = { city: data.city, region: data.region, country: data.country_name, zip: data.postal }
-          setLocation(loc)
-          setLocationPhase('detected')
-          fetchZone(loc.zip)
-          if (import.meta.env.VITE_DEBUG === 'true') {
-            console.log('[DEBUG] Inferred location from IP:', loc)
-          }
+          applyIpData({ city: data.city, region: data.region, country: data.country_name, zip: data.postal })
         } else {
-          setLocationPhase('needs-zip')
-          if (import.meta.env.VITE_DEBUG === 'true') {
-            console.log('[DEBUG] IP location lookup returned no city, falling back to ZIP input. Raw response:', data)
-          }
+          tryFallback(`no city or error in response: ${JSON.stringify(data)}`)
         }
       })
-      .catch((err) => {
-        setLocationPhase('needs-zip')
-        if (import.meta.env.VITE_DEBUG === 'true') {
-          console.log('[DEBUG] IP location lookup failed, falling back to ZIP input. Error:', err)
-        }
-      })
+      .catch((err) => tryFallback(err))
   }, [])
 
-  const handleLocationEdit = async (e) => {
-    e.preventDefault()
-    const input = editInput.trim()
-    if (!input) return
+  const applyLocationInput = async (input) => {
     setHardinessZone('')
-    setEditingLocation(false)
-
     if (/^\d{5}(-\d{4})?$/.test(input)) {
       setLocation({ zip: input })
       fetchZone(input)
@@ -105,6 +119,14 @@ export default function App() {
     }
   }
 
+  const handleLocationEdit = async (e) => {
+    e.preventDefault()
+    const input = editInput.trim()
+    if (!input) return
+    setEditingLocation(false)
+    await applyLocationInput(input)
+  }
+
   const fetchZone = (zip) => {
     if (!zip) return
     fetch(`https://phzmapi.org/${zip}.json`)
@@ -125,16 +147,14 @@ export default function App() {
       .catch(() => {})
   }
 
-  const handleZipSubmit = (e) => {
+  const handleZipSubmit = async (e) => {
     e.preventDefault()
-    if (zipInput.trim()) {
-      const loc = { zip: zipInput.trim() }
-      setLocation(loc)
-      setLocationPhase('detected')
-      fetchZone(loc.zip)
-      if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[DEBUG] Location set from ZIP input:', loc)
-      }
+    const input = zipInput.trim()
+    if (!input) return
+    setLocationPhase('detected')
+    await applyLocationInput(input)
+    if (import.meta.env.VITE_DEBUG === 'true') {
+      console.log('[DEBUG] Location set from initial input:', input)
     }
   }
 
@@ -249,14 +269,14 @@ export default function App() {
           <div className="location-prompt">
             <div className="location-icon">📍</div>
             <h2>Where are you gardening?</h2>
-            <p>Enter your ZIP code so we can recommend the best plants for your area.</p>
+            <p>Enter your city and state or ZIP code so we can recommend the best plants for your area.</p>
             <form onSubmit={handleZipSubmit} className="zip-form">
               <input
                 type="text"
                 value={zipInput}
                 onChange={(e) => setZipInput(e.target.value)}
-                placeholder="e.g. 80301"
-                maxLength={10}
+                placeholder="City, State or ZIP"
+                maxLength={100}
                 className="zip-input"
                 autoFocus
               />
