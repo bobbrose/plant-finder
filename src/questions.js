@@ -96,6 +96,7 @@ export const QUESTIONS = [
       { value: 'Susceptible to late spring freezes', label: 'Late Spring Freeze Risk' },
       { value: 'Adjacent to areas with lawn chemical spray drift', label: 'Near Lawn Chemicals' },
       { value: 'Must be rabbit resistant', label: 'Rabbit Resistant' },
+      { value: 'Low-allergen plants preferred', label: 'Low Allergen' },
     ],
   },
 ]
