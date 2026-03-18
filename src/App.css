@@ -615,6 +615,33 @@ body {
   margin-bottom: 1rem;
 }
 
+.token-usage {
+  margin: 0.75rem auto 1rem;
+  max-width: 480px;
+}
+
+.token-usage-bar-wrap {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.35rem;
+}
+
+.token-usage-bar {
+  height: 100%;
+  background: var(--green-mid);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.token-usage-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-light);
+}
+
 /* ---- PLANT CARD ---- */
 
 .plant-card {

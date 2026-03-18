@@ -153,7 +153,7 @@ For localNurseries, suggest 5-7 real nurseries within 10 miles of ${locationStr}
 
     cacheSet(key, plants)
     console.log(`Cache SET — cache size now: ${cache.size}`)
-    res.json({ plants })
+    res.json({ plants, usage: message.usage })
   } catch (err) {
     if (err instanceof SyntaxError) {
       console.error('Plant recommendations: JSON parse error:', err.message)

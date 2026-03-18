@@ -19,6 +19,7 @@ export default function App() {
   const [error, setError] = useState('')
   const [submittedAnswers, setSubmittedAnswers] = useState(null)
   const [resetKey, setResetKey] = useState(0)
+  const [tokenUsage, setTokenUsage] = useState(null)
   const [location, setLocation] = useState(null)
   const [locationPhase, setLocationPhase] = useState('detecting') // 'detecting' | 'detected' | 'needs-zip'
   const [zipInput, setZipInput] = useState('')
@@ -160,6 +161,7 @@ export default function App() {
       }
 
       setPlants(data.plants)
+      if (data.usage) setTokenUsage(data.usage)
       setPhase('results')
     } catch (err) {
       console.error('Plant recommendations request failed:', err)
@@ -173,6 +175,7 @@ export default function App() {
     setPlants([])
     setError('')
     setSubmittedAnswers(null)
+    setTokenUsage(null)
     setResetKey((k) => k + 1)
   }
 
@@ -277,6 +280,7 @@ export default function App() {
             onReset={handleReset}
             location={label}
             answers={submittedAnswers}
+            tokenUsage={tokenUsage}
           />
         )}
       </main>

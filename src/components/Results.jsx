@@ -20,7 +20,29 @@ function AnswerSummary({ answers }) {
   )
 }
 
-export default function Results({ phase, plants, error, onReset, location, answers }) {
+const CONTEXT_WINDOW = 200_000
+
+function TokenUsageBar({ usage }) {
+  if (!usage) return null
+  const { input_tokens, output_tokens } = usage
+  const total = input_tokens + output_tokens
+  const remaining = CONTEXT_WINDOW - total
+  const pctUsed = Math.min((total / CONTEXT_WINDOW) * 100, 100)
+
+  return (
+    <div className="token-usage">
+      <div className="token-usage-bar-wrap">
+        <div className="token-usage-bar" style={{ width: `${pctUsed}%` }} />
+      </div>
+      <div className="token-usage-stats">
+        <span>{input_tokens.toLocaleString()} in · {output_tokens.toLocaleString()} out</span>
+        <span>{remaining.toLocaleString()} tokens left of {CONTEXT_WINDOW.toLocaleString()}</span>
+      </div>
+    </div>
+  )
+}
+
+export default function Results({ phase, plants, error, onReset, location, answers, tokenUsage }) {
   if (phase === 'loading') {
     return (
       <div className="results-loading">
@@ -64,6 +86,7 @@ export default function Results({ phase, plants, error, onReset, location, answe
         <p className="nursery-disclaimer">
           💡 Nursery availability varies by season. Call ahead before visiting.
         </p>
+        <TokenUsageBar usage={tokenUsage} />
         <button className="btn btn-secondary" onClick={onReset}>
           ← Start Over
         </button>
