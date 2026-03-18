@@ -1,6 +1,6 @@
 # Plant Picker
 
-A quiz-based plant recommendation tool. Answer 6 questions about your yard and get 5 tailored plant recommendations powered by Claude AI. Your location is detected automatically from your IP, or you can enter a ZIP code — recommendations are specific to your local climate and region.
+A quiz-based plant recommendation tool. Answer 7 questions about your yard and get 5 tailored plant recommendations powered by Claude AI. Your location is detected automatically from your IP, or you can enter a city/state or ZIP code — recommendations are specific to your local climate and region.
 
 ## Local Development
 
@@ -41,7 +41,7 @@ npm start       # serves everything on port 3000
 3. Add `ANTHROPIC_API_KEY` as an environment variable in the Vercel project settings.
 4. Deploy — Vercel runs `npm run build`, then serves everything through Express.
 
-> The `vercel.json` uses `@vercel/node` to run Express as a serverless function and bundles the `dist/` static files alongside it.
+> `vercel.json` routes all `/api/*` requests to `api/index.js` (a standalone Express serverless function). Static assets are served directly from `dist/` by Vercel's CDN.
 
 ## Stack
 
@@ -52,11 +52,14 @@ npm start       # serves everything on port 3000
 
 ## Quiz Flow
 
-1. Sun exposure
-2. Soil type
-3. Terrain
-4. Planting goals *(multi-select)*
-5. Irrigation preference
-6. Special concerns — deer, fire zone, pet-safe, wind, etc. *(multi-select, optional)*
+All questions are optional — skipped questions default to "no preference".
+
+1. Plant type — trees, shrubs, flowering plants, perennials, grasses, ground cover *(multi-select, optional)*
+2. Sun exposure
+3. Soil type
+4. Terrain
+5. Planting goals *(multi-select)*
+6. Irrigation preference
+7. Special concerns — deer, fire zone, pet-safe, wind, allergens, etc. *(multi-select, optional)*
 
 Each result includes: why it fits your specific yard, companion plants, fire safety rating (Low / Medium / High), bloom time, water needs, height, and links to local nurseries.
