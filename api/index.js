@@ -11,6 +11,36 @@ app.use(express.json())
 const MOCK_MODE = process.env.MOCK_API === 'true'
 if (MOCK_MODE) console.log('⚠️  MOCK_API mode enabled — Claude API will not be called')
 
+async function isUrlReachable(url) {
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 5000)
+    const res = await fetch(url, {
+      method: 'HEAD',
+      signal: controller.signal,
+      redirect: 'follow',
+      headers: { 'User-Agent': 'PlantPicker/1.0' },
+    })
+    clearTimeout(timeout)
+    // 405 = HEAD not allowed but site is up; treat as reachable
+    return res.ok || res.status === 405
+  } catch {
+    return false
+  }
+}
+
+async function validateNurseries(plants) {
+  await Promise.all(plants.map(async (plant) => {
+    if (!plant.localNurseries?.length) return
+    const results = await Promise.all(
+      plant.localNurseries.map(async (n) => ({ ...n, ok: await isUrlReachable(n.url) }))
+    )
+    const valid = results.filter((n) => n.ok).map(({ ok, ...n }) => n)
+    // Only filter if at least one passed — don't leave the list empty if all fail
+    if (valid.length > 0) plant.localNurseries = valid
+  }))
+}
+
 const CACHE_MAX = 500
 const cache = new Map()
 
@@ -117,7 +147,7 @@ Return ONLY a valid JSON array — no markdown, no code fences, no explanation b
 
 fireSafetyRating must be exactly one of: "Low" (fire-resistant, good for WUI zones), "Medium" (moderate risk), or "High" (higher fuel load, avoid near structures in fire zones).
 
-For localNurseries, suggest 5-7 real nurseries within 10 miles of ${locationStr} that might stock this specific plant. Include real URLs — try to deep link directly to the plant's page on the nursery website if you know it. If only the nursery homepage is known, use that. If you are not confident about specific nurseries in the area, use an empty array.`
+For localNurseries, suggest 5-7 real nurseries within 10 miles of ${locationStr} that might stock this specific plant. Only include nurseries you are confident are still open and operating. Include real URLs — try to deep link directly to the plant's page on the nursery website if you know it, otherwise use the nursery homepage. If you are not confident about specific nurseries in the area, use an empty array rather than guessing.`
 
   if (process.env.VITE_DEBUG === 'true') {
     console.log('[DEBUG] AI prompt:\n' + prompt)
@@ -155,6 +185,7 @@ For localNurseries, suggest 5-7 real nurseries within 10 miles of ${locationStr}
       throw new Error('Invalid response format')
     }
 
+    await validateNurseries(plants)
     cacheSet(key, plants)
     console.log(`Cache SET — cache size now: ${cache.size}`)
     res.json({ plants })
