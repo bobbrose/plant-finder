@@ -1,5 +1,21 @@
 export const QUESTIONS = [
   {
+    id: 'plantTypes',
+    title: 'Plant Type',
+    subtitle: 'What kind of plants are you looking for? Select all that apply.',
+    type: 'checkbox',
+    optional: true,
+    icon: '🌳',
+    options: [
+      { value: 'Trees', label: 'Trees' },
+      { value: 'Shrubs', label: 'Shrubs' },
+      { value: 'Flowering Plants', label: 'Flowering Plants' },
+      { value: 'Perennials', label: 'Perennials' },
+      { value: 'Grasses', label: 'Grasses' },
+      { value: 'Ground Cover', label: 'Ground Cover' },
+    ],
+  },
+  {
     id: 'sunExposure',
     title: 'Sun Exposure',
     subtitle: 'How much direct sunlight does this planting area receive?',

@@ -4,6 +4,7 @@ import { QUESTIONS, getAnswerLabel } from '../questions.js'
 export default function Quiz({ onSubmit }) {
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState({
+    plantTypes: [],
     sunExposure: '',
     soilType: '',
     terrain: '',
@@ -17,11 +18,7 @@ export default function Quiz({ onSubmit }) {
   const progress = ((step + 1) / QUESTIONS.length) * 100
   const current = answers[question.id]
 
-  const isAnswered = question.optional
-    ? true
-    : question.type === 'radio'
-      ? current !== ''
-      : current.length > 0
+  const hasSelection = question.type === 'radio' ? current !== '' : current.length > 0
 
   const handleRadio = (value) => {
     setAnswers((prev) => ({ ...prev, [question.id]: value }))
@@ -39,10 +36,7 @@ export default function Quiz({ onSubmit }) {
     })
   }
 
-  const previousSteps = QUESTIONS.slice(0, step).filter((q) => {
-    const val = answers[q.id]
-    return Array.isArray(val) ? val.length > 0 : val !== ''
-  })
+  const previousSteps = QUESTIONS.slice(0, step)
 
   return (
     <div className="quiz">
@@ -52,7 +46,9 @@ export default function Quiz({ onSubmit }) {
             <div key={q.id} className="history-item">
               <span className="history-icon">{q.icon}</span>
               <span className="history-label">{q.title}:</span>
-              <span className="history-value">{getAnswerLabel(q, answers[q.id])}</span>
+              <span className="history-value">{
+                (() => { const val = answers[q.id]; return (Array.isArray(val) ? val.length > 0 : val !== '') ? getAnswerLabel(q, val) : 'No preference'})()
+              }</span>
             </div>
           ))}
         </div>
@@ -115,25 +111,20 @@ export default function Quiz({ onSubmit }) {
             <button
               className="btn btn-primary"
               onClick={() => onSubmit(answers)}
-              disabled={!isAnswered}
             >
-              Pick My Plants 🌱
+              {hasSelection ? 'Pick My Plants 🌱' : 'Skip & Pick 🌱'}
             </button>
           ) : (
             <button
               className="btn btn-primary"
               onClick={() => setStep((s) => s + 1)}
-              disabled={!isAnswered}
             >
-              Next →
+              {hasSelection ? 'Next →' : 'Skip →'}
             </button>
           )}
         </div>
       </div>
 
-      {question.optional && (
-        <p className="optional-note">This step is optional — click "Pick My Plants" to skip</p>
-      )}
     </div>
   )
 }

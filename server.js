@@ -36,8 +36,9 @@ function cacheSet(key, value) {
   }
 }
 
-function cacheKey({ sunExposure, soilType, terrain, goals, irrigation, concerns, location }) {
+function cacheKey({ plantTypes, sunExposure, soilType, terrain, goals, irrigation, concerns, location }) {
   return JSON.stringify({
+    plantTypes: [...(plantTypes ?? [])].sort(),
     sunExposure,
     soilType,
     terrain,
@@ -69,11 +70,8 @@ app.get('/api/health', async (_req, res) => {
 })
 
 app.post('/api/plants', async (req, res) => {
-  const { sunExposure, soilType, terrain, goals, irrigation, concerns, location } = req.body
+  const { plantTypes, sunExposure, soilType, terrain, goals, irrigation, concerns, location } = req.body
 
-  if (!sunExposure || !soilType || !terrain || !Array.isArray(goals) || goals.length === 0 || !irrigation) {
-    return res.status(400).json({ error: 'Please answer all required quiz questions.' })
-  }
 
   if (MOCK_MODE) {
     await new Promise((r) => setTimeout(r, 1200)) // simulate API delay
@@ -94,14 +92,15 @@ app.post('/api/plants', async (req, res) => {
   const prompt = `You are an expert horticulturalist helping a gardener in ${locationStr}.
 
 A gardener described their yard:
-- Sun exposure: ${sunExposure}
-- Soil type: ${soilType}
-- Terrain: ${terrain}
-- Planting goals: ${goals.join(', ')}
-- Irrigation preference: ${irrigation}
+- Desired plant types: ${plantTypes && plantTypes.length > 0 ? plantTypes.join(', ') : 'No preference'}
+- Sun exposure: ${sunExposure || 'Any'}
+- Soil type: ${soilType || 'Any'}
+- Terrain: ${terrain || 'Any'}
+- Planting goals: ${goals && goals.length > 0 ? goals.join(', ') : 'No preference'}
+- Irrigation preference: ${irrigation || 'Any'}
 - Special concerns: ${concerns && concerns.length > 0 ? concerns.join(', ') : 'None specified'}
 
-Recommend exactly 5 plants perfectly suited to the local climate of ${locationStr} and these yard conditions. Consider the regional hardiness zone, typical rainfall patterns, and locally available species. Favor native species, but don't exclude non-native ones as well.
+${concerns && concerns.includes('Located in wildfire / WUI zone') ? 'IMPORTANT: The gardener is in a wildfire/WUI zone. Do NOT recommend any plants with a High or Medium fire safety rating. Only recommend plants rated Low fire risk.\n\n' : ''}Recommend exactly 5 plants perfectly suited to the local climate of ${locationStr} and these yard conditions. Consider the regional hardiness zone, typical rainfall patterns, and locally available species. Favor native species, but don't exclude non-native ones as well.
 
 Return ONLY a valid JSON array — no markdown, no code fences, no explanation before or after:
 [

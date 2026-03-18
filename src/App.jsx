@@ -284,10 +284,10 @@ export default function App() {
       <footer className="app-footer">
         <p>
           <button className="about-link" onClick={() => setShowAbout(true)}>
-            Plant Picker · AI-powered recommendations{label ? ` · ${label}` : ''}
+            Plant Picker · AI-powered recommendations
           </button>
         </p>
-        <p>Nursery links are suggestions — availability varies by season. Call ahead before visiting.</p>
+
       </footer>
 
       {showAbout && (
