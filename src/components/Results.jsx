@@ -3,19 +3,19 @@ import { QUESTIONS, getAnswerLabel } from '../questions.js'
 
 function AnswerSummary({ answers }) {
   if (!answers) return null
-  const filled = QUESTIONS.filter((q) => {
-    const val = answers[q.id]
-    return Array.isArray(val) ? val.length > 0 : val !== ''
-  })
   return (
     <div className="quiz-history">
-      {filled.map((q) => (
-        <div key={q.id} className="history-item">
-          <span className="history-icon">{q.icon}</span>
-          <span className="history-label">{q.title}:</span>
-          <span className="history-value">{getAnswerLabel(q, answers[q.id])}</span>
-        </div>
-      ))}
+      {QUESTIONS.map((q) => {
+        const val = answers[q.id]
+        const hasAnswer = Array.isArray(val) ? val.length > 0 : val !== ''
+        return (
+          <div key={q.id} className="history-item">
+            <span className="history-icon">{q.icon}</span>
+            <span className="history-label">{q.title}:</span>
+            <span className="history-value">{hasAnswer ? getAnswerLabel(q, val) : 'No preference'}</span>
+          </div>
+        )
+      })}
     </div>
   )
 }
