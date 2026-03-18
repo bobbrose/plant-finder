@@ -56,24 +56,24 @@ export default function App() {
 
     const tryFallback = (reason) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[DEBUG] ipapi.co failed, trying ip-api.com fallback. Reason:', reason)
+        console.log('[DEBUG] ipapi.co failed, trying freeipapi.com fallback. Reason:', reason)
       }
-      fetch('https://ipwho.is/')
+      fetch('https://freeipapi.com/api/json')
         .then((r) => r.json())
         .then((data) => {
-          if (data.success && data.city) {
-            applyIpData({ city: data.city, region: data.region, country: data.country, zip: data.postal })
+          if (data.cityName && data.cityName !== '-') {
+            applyIpData({ city: data.cityName, region: data.regionName, country: data.countryName, zip: data.zipCode })
           } else {
             setLocationPhase('needs-zip')
             if (import.meta.env.VITE_DEBUG === 'true') {
-              console.log('[DEBUG] ipwho.is fallback also failed. Raw response:', data)
+              console.log('[DEBUG] freeipapi.com fallback also failed. Raw response:', data)
             }
           }
         })
         .catch((err) => {
           setLocationPhase('needs-zip')
           if (import.meta.env.VITE_DEBUG === 'true') {
-            console.log('[DEBUG] ipwho.is fallback also failed. Error:', err)
+            console.log('[DEBUG] freeipapi.com fallback also failed. Error:', err)
           }
         })
     }
