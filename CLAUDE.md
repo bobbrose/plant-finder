@@ -17,7 +17,7 @@ Requires a `.env` file with `ANTHROPIC_API_KEY` — copy from `.env.example`.
 
 Single repo, two processes in development:
 
-- **`server.js`** — Express server for local dev. Serves `dist/` as static files and exposes all `/api/*` routes. Calls `claude-opus-4-6` via `@anthropic-ai/sdk`.
+- **`server.js`** — Express server for local dev. Serves `dist/` as static files and exposes all `/api/*` routes. Calls `claude-sonnet-4-6` via `@anthropic-ai/sdk`.
 - **`api/index.js`** — Identical API logic as a standalone Express app for Vercel serverless. No `app.listen` or static serving.
 - **`src/`** — React/Vite frontend. Vite proxies `/api` to Express on port 3000 during dev. In production, Vercel serves `dist/` from CDN and routes `/api/*` to `api/index.js`.
 

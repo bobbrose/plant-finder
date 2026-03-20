@@ -47,7 +47,7 @@ npm start       # serves everything on port 3000
 
 - **Frontend**: React 18 + Vite (no CSS framework — custom CSS)
 - **Backend**: Node.js + Express
-- **AI**: Anthropic Claude (`claude-opus-4-6`) via `@anthropic-ai/sdk`
+- **AI**: Anthropic Claude (`claude-sonnet-4-6`) via `@anthropic-ai/sdk`
 - **Deployment**: Vercel
 
 ## Quiz Flow

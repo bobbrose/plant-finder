@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import express from 'express'
 import Anthropic from '@anthropic-ai/sdk'
+import { rateLimit } from 'express-rate-limit'
 import { getRandomMockPlants } from '../mockPlants.js'
 
 const app = express()
@@ -75,22 +76,72 @@ function cacheKey({ plantTypes, sunExposure, soilType, terrain, goals, irrigatio
   })
 }
 
+const locationCache = new Map()
+const LOCATION_CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
+const LOCATION_CACHE_MAX = 1000
+
+function locationCacheGet(ip) {
+  const entry = locationCache.get(ip)
+  if (!entry) return null
+  if (Date.now() - entry.ts > LOCATION_CACHE_TTL) {
+    locationCache.delete(ip)
+    return null
+  }
+  return entry.result
+}
+
+function locationCacheSet(ip, result) {
+  locationCache.set(ip, { result, ts: Date.now() })
+  if (locationCache.size > LOCATION_CACHE_MAX) {
+    locationCache.delete(locationCache.keys().next().value)
+  }
+}
+
+async function fetchLocation(ip) {
+  const isLocal = !ip || ip === '::1' || ip === '127.0.0.1'
+
+  // Primary: freeipapi.com
+  try {
+    const url = isLocal ? 'https://freeipapi.com/api/json' : `https://freeipapi.com/api/json/${ip}`
+    const r = await fetch(url, { signal: AbortSignal.timeout(5000) })
+    if (r.ok) {
+      const data = await r.json()
+      if (data.cityName && data.cityName !== '-') {
+        return { city: data.cityName, region: data.regionName, country: data.countryName, zip: data.zipCode }
+      }
+    }
+  } catch { /* fall through to fallback */ }
+
+  // Fallback: ip-api.com
+  try {
+    const url = isLocal ? 'https://ip-api.com/json' : `https://ip-api.com/json/${ip}`
+    const r = await fetch(url, { signal: AbortSignal.timeout(5000) })
+    if (r.ok) {
+      const data = await r.json()
+      if (data.status === 'success' && data.city) {
+        return { city: data.city, region: data.regionName, country: data.country, zip: data.zip }
+      }
+    }
+  } catch { /* fall through */ }
+
+  return null
+}
+
 app.get('/api/location', async (req, res) => {
   const ip = (req.headers['x-forwarded-for'] || req.ip || '').split(',')[0].trim()
+
+  const cached = locationCacheGet(ip)
+  if (cached) return res.json({ ...cached, cached: true })
+
   try {
-    const url = ip && ip !== '::1' && ip !== '127.0.0.1'
-      ? `https://freeipapi.com/api/json/${ip}`
-      : 'https://freeipapi.com/api/json'
-    const r = await fetch(url)
-    const data = await r.json()
-    if (data.cityName && data.cityName !== '-') {
-      res.json({ city: data.cityName, region: data.regionName, country: data.countryName, zip: data.zipCode })
-    } else {
-      res.json({})
+    const result = await fetchLocation(ip)
+    if (result) {
+      locationCacheSet(ip, result)
+      return res.json(result)
     }
-  } catch {
-    res.json({})
-  }
+  } catch { /* fall through */ }
+
+  res.json({})
 })
 
 app.get('/api/health', async (_req, res) => {
@@ -113,7 +164,15 @@ app.get('/api/health', async (_req, res) => {
   }
 })
 
-app.post('/api/plants', async (req, res) => {
+const plantsRateLimit = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Please wait a moment and try again.' },
+})
+
+app.post('/api/plants', plantsRateLimit, async (req, res) => {
   const { plantTypes, sunExposure, soilType, terrain, goals, irrigation, concerns, location } = req.body
 
 
@@ -183,7 +242,7 @@ For localNurseries, suggest 5-7 real nurseries within 10 miles of ${locationStr}
   let rawText
   try {
     const message = await anthropic.messages.create({
-      model: 'claude-opus-4-6',
+      model: 'claude-sonnet-4-6',
       max_tokens: 4096,
       messages: [{ role: 'user', content: prompt }],
     })
