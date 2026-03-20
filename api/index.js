@@ -7,6 +7,7 @@ import { getRandomMockPlants } from '../mockPlants.js'
 const app = express()
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
+app.set('trust proxy', 1)
 app.use(express.json())
 
 const MOCK_MODE = process.env.MOCK_API === 'true'

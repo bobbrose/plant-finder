@@ -11,6 +11,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const app = express()
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
+app.set('trust proxy', 1)
 app.use(express.json())
 app.use(express.static(join(__dirname, 'dist')))
 
